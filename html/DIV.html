@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据大盘</title>
+    <script src="../js/echarts.js"></script>
+    <script src="../js/echarts-gl.js"></script>
+    <script src="../js/jquery-3.3.1.js"></script>
+</head>
+<body>
+    <div style="background: antiquewhite;height: 300px;width: 100%">
+        <div id="c-l" style="border: black 2px solid;height: 100%;width: 25%;float: left"></div>
+        <div id="c-c" style="border: black 2px solid;height: 100%;width: 49%;float: left">111111</div>
+        <div id="c-r" style="border: black 2px solid;height: 100%;width: 25%;float: left">22222</div>
+    </div>
+    <div style="background: antiquewhite;height: 500px;width: 100%">
+        <div id="b-l" style="border: black 2px solid;height: 100%;width: 25%;float: left">a</div>
+        <div id="b-c" style="border: black 2px solid;height: 100%;width: 49%;float: left">111111</div>
+        <div id="b-r" style="border: black 2px solid;height: 100%;width: 25%;float: left">22222</div>
+    </div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('c-l'),"dark");
+        // 指定图表的配置项和数据
+        myChart.setOption({
+            title:{
+                show:true,
+                text:"渠道占比",
+                // 名称位置
+                left:0,
+                fontFamily: 'Courier New'
+
+            },
+            series : [
+                {
+                    name: '访问来源',
+                    type: 'pie',
+                    roseType: 'angle',/*显示成南丁格尔图 可以没有*/
+                    radius: '55%',
+                    data:[
+                        {value:15, name:'头条'},
+                        {value:20, name:'百度'},
+                        {value:36, name:'腾讯'},
+                        {value:10, name:'美团'},
+                        {value:10, name:'京东'},
+                        {value:20, name:'阿里'},
+                    ]
+                }
+            ],
+            /*itemStyle  一般用来设置 诸如阴影、透明度、颜色、边框颜色、边框宽度等效果*/
+            itemStyle: {
+                // 阴影的大小
+                shadowBlur: 200,
+                // 阴影水平方向上的偏移
+                shadowOffsetX: 0,
+                // 阴影垂直方向上的偏移
+                shadowOffsetY: 0,
+                // 阴影颜色
+                shadowColor: 'rgba(0, 0, 0, 0.5)',
+                /* emphasis 一般用来设置 hove的效果*/
+                emphasis: {
+                    shadowBlur: 500,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            },
+            /* 图的背景色 */
+            backgroundColor: '#2c343c',
+            /* 图上字体的设置 最后一个参数透明度*/
+            textStyle: {
+                color: 'rgba(255, 255, 255, 0.9)'
+            }
+        })
+    </script>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('c-r'),"dark");
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '渠道用户'
+            },
+            tooltip: {
+                saveAsImage: {
+                    show:true
+                }
+            },
+            legend: {
+                data:['用户']
+            },
+            xAxis: {
+                data: ["头条","百度","腾讯","美团","京东","阿里"]
+            },
+            yAxis: {},
+            series: [{
+                name: '销量',
+                type: 'bar',
+                data: [15, 20, 36, 10, 10, 20]
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('c-c'));
+        $.getJSON('../data/flights.json', function(data) {
+
+            function getAirportCoord(idx) {
+                return [data.airports[idx][3], data.airports[idx][4]];
+            }
+            var routes = data.routes.map(function(airline) {
+                return [
+                    getAirportCoord(airline[1]),
+                    getAirportCoord(airline[2])
+                ];
+            });
+
+            myChart.setOption({
+                backgroundColor: '#000',
+                globe: {
+                    baseTexture: '../image/world.topo.bathy.200401.jpg',
+                    heightTexture: '../image/bathymetry_bw_composite_4k.jpg',
+
+                    shading: 'lambert',
+
+                    light: {
+                        ambient: {
+                            intensity: 0.4
+                        },
+                        main: {
+                            intensity: 0.4
+                        }
+                    },
+
+                    viewControl: {
+                        autoRotate: false
+                    }
+                },
+                series: {
+
+                    type: 'lines3D',
+
+                    coordinateSystem: 'globe',
+
+                    blendMode: 'lighter',
+
+                    lineStyle: {
+                        width: 1,
+                        color: 'rgb(50, 50, 150)',
+                        opacity: 0.1
+                    },
+
+                    data: routes
+                }
+            });
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        var myChart = echarts.init(document.getElementById('b-c'),"dark");
+        $.getJSON('../data/flights.json', function (data) {
+            var airports = data.airports.map(function (item) {
+                return {
+                    coord: [item[3], item[4]]
+                }
+            });
+            function getAirportCoord(idx) {
+                return [data.airports[idx][3], data.airports[idx][4]];
+            }
+
+            // Route: [airlineIndex, sourceAirportIndex, destinationAirportIndex]
+            var routesGroupByAirline = {};
+            data.routes.forEach(function (route) {
+                var airline = data.airlines[route[0]];
+                var airlineName = airline[0];
+                if (!routesGroupByAirline[airlineName]) {
+                    routesGroupByAirline[airlineName] = [];
+                }
+                routesGroupByAirline[airlineName].push(route);
+            });
+
+            var pointsData = [];
+            data.routes.forEach(function (airline) {
+                pointsData.push(getAirportCoord(airline[1]));
+                pointsData.push(getAirportCoord(airline[2]));
+            });
+
+            var series = data.airlines.map(function (airline) {
+                var airlineName = airline[0];
+                var routes = routesGroupByAirline[airlineName];
+
+                if (!routes) {
+                    return null;
+                }
+                return {
+                    type: 'lines3D',
+                    name: airlineName,
+
+                    effect: {
+                        show: true,
+                        trailWidth: 2,
+                        trailLength: 0.15,
+                        trailOpacity: 1,
+                        trailColor: 'rgb(30, 30, 60)'
+                    },
+
+                    lineStyle: {
+                        width: 1,
+                        color: 'rgb(50, 50, 150)',
+                        // color: 'rgb(118, 233, 241)',
+                        opacity: 0.1
+                    },
+                    blendMode: 'lighter',
+
+                    data: routes.map(function (item) {
+                        return [airports[item[1]].coord, airports[item[2]].coord];
+                    })
+                };
+            }).filter(function (series) {
+                return !!series;
+            });
+            series.push({
+                type: 'scatter3D',
+                coordinateSystem: 'globe',
+                blendMode: 'lighter',
+                symbolSize: 2,
+                itemStyle: {
+                    color: 'rgb(50, 50, 150)',
+                    opacity: 0.2
+                },
+                data: pointsData
+            });
+
+            myChart.setOption({
+                legend: {
+                    selectedMode: 'single',
+                    left: 'left',
+                    data: Object.keys(routesGroupByAirline),
+                    orient: 'vertical',
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                globe: {
+
+                    environment: '../image/asset/starfield.jpg',
+
+                    heightTexture: '../image/bathymetry_bw_composite_4k.jpg',
+
+                    displacementScale: 0.1,
+                    displacementQuality: 'high',
+
+                    baseColor: '#000',
+
+                    shading: 'realistic',
+                    realisticMaterial: {
+                        roughness: 0.2,
+                        metalness: 0
+                    },
+
+                    postEffect: {
+                        enable: true,
+                        depthOfField: {
+                            enable: false,
+                            focalDistance: 150
+                        }
+                    },
+                    temporalSuperSampling: {
+                        enable: true
+                    },
+                    light: {
+                        ambient: {
+                            intensity: 0
+                        },
+                        main: {
+                            intensity: 0.1,
+                            shadow: false
+                        },
+                        ambientCubemap: {
+                            texture: '../data/lake.hdr',
+                            exposure: 1,
+                            diffuseIntensity: 0.5,
+                            specularIntensity: 2
+                        }
+                    },
+                    viewControl: {
+                        autoRotate: false
+                    },
+                    silent: true
+                },
+                series: series
+            });
+            window.addEventListener('keydown', function () {
+                series.forEach(function (series, idx) {
+                    myChart.dispatchAction({
+                        type: 'lines3DToggleEffect',
+                        seriesIndex: idx
+                    });
+                })
+            });
+        });
+
+    </script>
+</body>
+</html>
